@@ -7,6 +7,7 @@ import (
 )
 
 type MatchPlayerRepository interface {
+	GetAll(page int, pageSize int) ([]models.MatchPlayer, int64, error)
 	Create(player *models.MatchPlayer) error
 	CreateBatch(players []models.MatchPlayer) error
 	FindByID(id uint) (*models.MatchPlayer, error)
@@ -30,6 +31,31 @@ func (r *matchPlayerRepository) Create(player *models.MatchPlayer) error {
 
 func (r *matchPlayerRepository) CreateBatch(players []models.MatchPlayer) error {
 	return r.db.Create(&players).Error
+}
+
+func (r *matchPlayerRepository) GetAll(page int, pageSize int) ([]models.MatchPlayer, int64, error) {
+	var players []models.MatchPlayer
+	var total int64
+
+	offset := (page - 1) * pageSize
+
+	// Hitung total data
+	if err := r.db.Model(&models.MatchPlayer{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Ambil data dengan limit + offset
+	err := r.db.
+		Limit(pageSize).
+		Offset(offset).
+		Order("temp_score DESC, name ASC").
+		Find(&players).Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return players, total, nil
 }
 
 func (r *matchPlayerRepository) FindByID(id uint) (*models.MatchPlayer, error) {

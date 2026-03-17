@@ -17,6 +17,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&models.MatchEvent{},
 		&models.MatchPlayer{},
 		&models.MatchRound{},
+		&models.BannerEvent{},
 	)
 
 	if err != nil {

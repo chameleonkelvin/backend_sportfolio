@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"scoring_app/config"
@@ -17,69 +18,94 @@ import (
 )
 
 func main() {
-	// Parse flags
-	resetDB := flag.Bool("reset", false, "Reset database")
+	// Parse command line flags
+	resetDB := flag.Bool("reset", false, "Reset database (drop all tables and recreate)")
 	seedDB := flag.Bool("seed", false, "Seed initial data")
 	flag.Parse()
 
-	// Load config
+	// Load configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal("Failed to load configuration:", err)
 	}
 
-	// Init database
+	// Initialize database
 	if err := database.InitDatabase(cfg); err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
 	defer database.CloseDatabase()
+
 	db := database.GetDB()
 
-	// Reset / migrate DB
+	// Handle database reset flag
 	if *resetDB {
-		log.Println("⚠️ Resetting database...")
+		log.Println("⚠️  RESET DATABASE FLAG DETECTED!")
+		log.Println("This will delete all data. Press Ctrl+C to cancel or wait 3 seconds...")
+
 		if err := database.ResetDatabase(db); err != nil {
-			log.Fatal(err)
+			log.Fatal("Failed to reset database:", err)
 		}
-		if err := database.SeedData(db); err != nil {
-			log.Fatal(err)
-		}
+		log.Println("✅ Database reset completed")
 	} else {
+		// Normal migration
 		if err := database.AutoMigrate(db); err != nil {
-			log.Fatal(err)
-		}
-		if *seedDB {
-			if err := database.SeedData(db); err != nil {
-				log.Fatal(err)
-			}
+			log.Fatal("Failed to run migrations:", err)
 		}
 	}
 
-	// Repos & services
+	// Handle seed flag
+	if *seedDB || *resetDB {
+		if err := database.SeedData(db); err != nil {
+			log.Fatal("Failed to seed data:", err)
+		}
+	}
+
+	// Initialize repositories
 	userRepo := repositories.NewUserRepository(db)
 	accountTypeRepo := repositories.NewAccountTypeRepository(db)
 	matchEventRepo := repositories.NewMatchEventRepository(db)
+	matchPlayerRepo := repositories.NewMatchPlayerRepository(db)
+	matchRoundRepo := repositories.NewMatchRoundRepository(db)
+	leaderboardRepo := repositories.NewLeaderboardRepository(db)
+	bannerEventRepo := repositories.NewBannerEventRepository(db) // Tambahkan repository untuk BannerEvent
 
+	// Initialize services
 	authService := services.NewAuthService(userRepo, cfg.JWT.Secret)
 	accountTypeService := services.NewAccountTypeService(accountTypeRepo)
 	matchEventService := services.NewMatchEventService(matchEventRepo)
+	matchPlayerService := services.NewMatchPlayerService(
+		matchPlayerRepo,
+		matchEventRepo,
+	)
+	matchRoundService := services.NewMatchRoundService(
+		matchRoundRepo,
+		matchEventRepo,
+		matchPlayerRepo,
+	)
+	leaderboardService := services.NewLeaderboardService(leaderboardRepo)
+	bannerEventService := services.NewBannerEventService(bannerEventRepo) // Tambahkan service untuk BannerEvent
 
-	// Controllers
+	// Initialize controllers
 	authController := controllers.NewAuthController(authService)
 	accountTypeController := controllers.NewAccountTypeController(accountTypeService)
 	matchEventController := controllers.NewMatchEventController(matchEventService)
+	matchPlayerController := controllers.NewMatchPlayerController(matchPlayerService)
+	matchRoundController := controllers.NewMatchRoundController(matchRoundService)
+	leaderboardController := controllers.NewLeaderboardController(leaderboardService)
+	bannerEventsController := controllers.NewBannerEventController(bannerEventService) // Tambahkan controller untuk BannerEvent
 
-	// Middleware
+	// Initialize middleware
 	authMiddleware := middleware.NewAuthMiddleware(cfg.JWT.Secret)
 
-	// Gin mode
+	// Set Gin mode based on environment
 	if cfg.AppEnv == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	// Initialize Gin router
 	router := gin.Default()
 
-	// CORS
+	// CORS – allow requests from any origin (web dev server, mobile, etc.)
 	router.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -89,19 +115,23 @@ func main() {
 	}))
 
 	// Setup routes
-	routes.SetupRoutes(router, authController, accountTypeController, matchEventController, authMiddleware)
+	routes.SetupRoutes(router, authController, accountTypeController, matchEventController, matchPlayerController, matchRoundController, leaderboardController, bannerEventsController, authMiddleware)
 
-	// ✅ Use Railway PORT
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = cfg.Server.Port // fallback, usually 8080
-	}
-	log.Printf("🚀 Starting server on :%s", port)
+	// Start server
+	serverAddr := fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
+	log.Printf("🚀 Starting server on %s", serverAddr)
 	log.Printf("📊 Database: %s", cfg.Database.DBName)
 	log.Printf("🌍 Environment: %s", cfg.AppEnv)
 
-	// Bind to :PORT (not localhost)
-	if err := router.Run(":" + port); err != nil {
+	if err := router.Run(serverAddr); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
+}
+
+func getEnvOrExit(key string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		log.Fatalf("Environment variable %s is required", key)
+	}
+	return value
 }

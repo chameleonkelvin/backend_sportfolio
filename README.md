@@ -48,20 +48,10 @@ scoring_app/
 ├── .env                        # Environment variables
 ├── .env.example                # Template environment
 ├── main.go                     # Application entry point
-├── API_DOCUMENTATION.md        # 📚 Complete API documentation
-├── QUICK_API_REFERENCE.md      # ⚡ Quick API reference
-├── POSTMAN_COLLECTION.json     # 📦 Postman collection
 ├── DATABASE_SCHEMA.md          # Detail schema database
 ├── MIGRATION_GUIDE.md          # Panduan migrasi
 └── SETUP_NEW_DATABASE.md       # Panduan setup database baru
 ```
-
-## 📚 Documentation
-
-- **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - Dokumentasi lengkap semua API endpoint dengan contoh request/response
-- **[QUICK_API_REFERENCE.md](QUICK_API_REFERENCE.md)** - Quick reference untuk endpoint dan common use cases
-- **[POSTMAN_COLLECTION.json](POSTMAN_COLLECTION.json)** - Import ke Postman untuk testing API
-- **[DATABASE_SCHEMA.md](DATABASE_SCHEMA.md)** - Detail struktur database dan relationships
 
 ## 📊 Database Schema
 
