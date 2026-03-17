@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"scoring_app/config"
@@ -18,76 +17,69 @@ import (
 )
 
 func main() {
-	// Parse command line flags
-	resetDB := flag.Bool("reset", false, "Reset database (drop all tables and recreate)")
+	// Parse flags
+	resetDB := flag.Bool("reset", false, "Reset database")
 	seedDB := flag.Bool("seed", false, "Seed initial data")
 	flag.Parse()
 
-	// Load configuration
+	// Load config
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal("Failed to load configuration:", err)
 	}
 
-	// Initialize database
+	// Init database
 	if err := database.InitDatabase(cfg); err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
 	defer database.CloseDatabase()
-
 	db := database.GetDB()
 
-	// Handle database reset flag
+	// Reset / migrate DB
 	if *resetDB {
-		log.Println("⚠️  RESET DATABASE FLAG DETECTED!")
-		log.Println("This will delete all data. Press Ctrl+C to cancel or wait 3 seconds...")
-		// time.Sleep(3 * time.Second) // Uncomment for safety delay
-
+		log.Println("⚠️ Resetting database...")
 		if err := database.ResetDatabase(db); err != nil {
-			log.Fatal("Failed to reset database:", err)
+			log.Fatal(err)
 		}
-		log.Println("✅ Database reset completed")
-	} else {
-		// Normal migration
-		if err := database.AutoMigrate(db); err != nil {
-			log.Fatal("Failed to run migrations:", err)
-		}
-	}
-
-	// Handle seed flag
-	if *seedDB || *resetDB {
 		if err := database.SeedData(db); err != nil {
-			log.Fatal("Failed to seed data:", err)
+			log.Fatal(err)
+		}
+	} else {
+		if err := database.AutoMigrate(db); err != nil {
+			log.Fatal(err)
+		}
+		if *seedDB {
+			if err := database.SeedData(db); err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 
-	// Initialize repositories
+	// Repos & services
 	userRepo := repositories.NewUserRepository(db)
 	accountTypeRepo := repositories.NewAccountTypeRepository(db)
 	matchEventRepo := repositories.NewMatchEventRepository(db)
 
-	// Initialize services
 	authService := services.NewAuthService(userRepo, cfg.JWT.Secret)
 	accountTypeService := services.NewAccountTypeService(accountTypeRepo)
 	matchEventService := services.NewMatchEventService(matchEventRepo)
 
-	// Initialize controllers
+	// Controllers
 	authController := controllers.NewAuthController(authService)
 	accountTypeController := controllers.NewAccountTypeController(accountTypeService)
 	matchEventController := controllers.NewMatchEventController(matchEventService)
 
-	// Initialize middleware
+	// Middleware
 	authMiddleware := middleware.NewAuthMiddleware(cfg.JWT.Secret)
 
-	// Set Gin mode based on environment
+	// Gin mode
 	if cfg.AppEnv == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	// Initialize Gin router
 	router := gin.Default()
 
-	// CORS – allow requests from any origin (web dev server, mobile, etc.)
+	// CORS
 	router.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -99,22 +91,17 @@ func main() {
 	// Setup routes
 	routes.SetupRoutes(router, authController, accountTypeController, matchEventController, authMiddleware)
 
-	// Start server
-	serverAddr := fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
-	log.Printf("🚀 Starting server on %s", serverAddr)
+	// ✅ Use Railway PORT
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = cfg.Server.Port // fallback, usually 8080
+	}
+	log.Printf("🚀 Starting server on :%s", port)
 	log.Printf("📊 Database: %s", cfg.Database.DBName)
 	log.Printf("🌍 Environment: %s", cfg.AppEnv)
 
-	if err := router.Run(serverAddr); err != nil {
+	// Bind to :PORT (not localhost)
+	if err := router.Run(":" + port); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
-}
-
-// Helper function to check environment variable
-func getEnvOrExit(key string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		log.Fatalf("Environment variable %s is required", key)
-	}
-	return value
 }
