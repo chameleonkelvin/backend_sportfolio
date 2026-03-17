@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"scoring_app/config"
@@ -117,8 +116,12 @@ func main() {
 	// Setup routes
 	routes.SetupRoutes(router, authController, accountTypeController, matchEventController, matchPlayerController, matchRoundController, leaderboardController, bannerEventsController, authMiddleware)
 
-	// Start server
-	serverAddr := fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
+	// Start server (Railway-friendly)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = cfg.Server.Port
+	}
+	serverAddr := ":" + port
 	log.Printf("🚀 Starting server on %s", serverAddr)
 	log.Printf("📊 Database: %s", cfg.Database.DBName)
 	log.Printf("🌍 Environment: %s", cfg.AppEnv)
