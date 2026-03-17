@@ -1,0 +1,1235 @@
+{
+	"info": {
+		"name": "Scoring App API",
+		"description": "Complete API collection for Match Management System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/health",
+					"host": ["{{base_url}}"],
+					"path": ["health"]
+				},
+				"description": "Check if the API server is running"
+			},
+			"response": [
+				{
+					"name": "Success Response",
+					"originalRequest": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"body": "{\n    \"status\": \"ok\",\n    \"message\": \"Match Management System API is running\",\n    \"version\": \"1.0.0\",\n    \"models\": \"account_types, users, match_events, match_players, match_rounds\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.token) {",
+									"        pm.collectionVariables.set(\"token\", jsonData.data.token);",
+									"        console.log(\"Token saved:\", jsonData.data.token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"account_type_id\": \"player\",\n    \"username\": \"hauzan\",\n    \"full_name\": \"Hauzan Tsaaqif\",\n    \"email\": \"hauzan@gmail.com\",\n    \"password\": \"Hauzan@123\",\n    \"birth_date\": \"2003-10-02\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "register"]
+						},
+						"description": "Register a new user account. Returns JWT token automatically."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"account_type_id\": \"player\",\n    \"username\": \"hauzan\",\n    \"full_name\": \"Hauzan Tsaaqif\",\n    \"email\": \"hauzan@gmail.com\",\n    \"password\": \"Hauzan@123\",\n    \"birth_date\": \"2003-10-02\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/register",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "auth", "register"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": true,\n    \"message\": \"User registered successfully\",\n    \"data\": {\n        \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X3R5cGVfaWQiOiJwbGF5ZXIiLCJhY2NvdW50X3R5cGVfbmFtZSI6IlBsYXllciIsImVtYWlsIjoiaGF1emFuQGdtYWlsLmNvbSIsImV4cCI6MTcwOTQ2MTIwMCwiZnVsbF9uYW1lIjoiSGF1emFuIFRzYWFxaWYiLCJpYXQiOjE3MDkzNzQ4MDAsInVzZXJfaWQiOiJhYjEyMzQ1Ni03ODkwLTQ1NjctODkwMS0xMjM0NTY3ODkwMTIiLCJ1c2VybmFtZSI6ImhhdXphbiJ9.xyz123...\",\n        \"user\": {\n            \"id\": \"ab123456-7890-4567-8901-123456789012\",\n            \"account_type_id\": \"player\",\n            \"username\": \"hauzan\",\n            \"full_name\": \"Hauzan Tsaaqif\",\n            \"email\": \"hauzan@gmail.com\",\n            \"birth_date\": \"2003-10-02T00:00:00Z\",\n            \"created_at\": \"2026-03-02T10:30:00Z\"\n        }\n    }\n}"
+						},
+						{
+							"name": "Error - Username Already Exists",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"account_type_id\": \"player\",\n    \"username\": \"hauzan\",\n    \"full_name\": \"Hauzan Tsaaqif\",\n    \"email\": \"hauzan@gmail.com\",\n    \"password\": \"Hauzan@123\",\n    \"birth_date\": \"2003-10-02\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/register",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "auth", "register"]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": false,\n    \"message\": \"username already exists\"\n}"
+						},
+						{
+							"name": "Error - Invalid Input",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"ab\",\n    \"email\": \"invalid-email\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/register",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "auth", "register"]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": false,\n    \"message\": \"Invalid request body\",\n    \"errors\": \"Key: 'RegisterRequest.AccountTypeID' Error:Field validation for 'AccountTypeID' failed on the 'required' tag...\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.token) {",
+									"        pm.collectionVariables.set(\"token\", jsonData.data.token);",
+									"        console.log(\"Token saved:\", jsonData.data.token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"hauzan\",\n    \"password\": \"Hauzan@123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "login"]
+						},
+						"description": "Login with username and password. Returns JWT token with all user data in payload."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"hauzan\",\n    \"password\": \"Hauzan@123\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/login",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "auth", "login"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Login successful\",\n    \"data\": {\n        \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X3R5cGVfaWQiOiJwbGF5ZXIiLCJhY2NvdW50X3R5cGVfbmFtZSI6IlBsYXllciIsImVtYWlsIjoiaGF1emFuQGdtYWlsLmNvbSIsImV4cCI6MTcwOTQ2MTIwMCwiZnVsbF9uYW1lIjoiSGF1emFuIFRzYWFxaWYiLCJpYXQiOjE3MDkzNzQ4MDAsInVzZXJfaWQiOiJhYjEyMzQ1Ni03ODkwLTQ1NjctODkwMS0xMjM0NTY3ODkwMTIiLCJ1c2VybmFtZSI6ImhhdXphbiJ9.xyz123...\",\n        \"user\": {\n            \"id\": \"ab123456-7890-4567-8901-123456789012\",\n            \"account_type_id\": \"player\",\n            \"account_type\": {\n                \"id\": \"player\",\n                \"name\": \"Player\",\n                \"description\": \"Regular player account\",\n                \"created_at\": \"2026-03-01T08:00:00Z\",\n                \"updated_at\": \"2026-03-01T08:00:00Z\"\n            },\n            \"username\": \"hauzan\",\n            \"full_name\": \"Hauzan Tsaaqif\",\n            \"email\": \"hauzan@gmail.com\",\n            \"birth_date\": \"2003-10-02T00:00:00Z\",\n            \"created_at\": \"2026-03-02T10:30:00Z\"\n        }\n    }\n}"
+						},
+						{
+							"name": "Error - Invalid Credentials",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"hauzan\",\n    \"password\": \"wrongpassword\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/login",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "auth", "login"]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": false,\n    \"message\": \"invalid username or password\"\n}"
+						}
+					]
+				}
+			],
+			"description": "Authentication endpoints for user registration and login"
+		},
+		{
+			"name": "Account Types",
+			"item": [
+				{
+					"name": "Create Account Type",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Coach\",\n    \"description\": \"Team coach or trainer account\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/account-types",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "account-types"]
+						},
+						"description": "Create a new account type (requires authentication)"
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Coach\",\n    \"description\": \"Team coach or trainer account\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/account-types",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "account-types"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Account type created successfully\",\n    \"data\": {\n        \"id\": \"cd234567-8901-4567-8901-234567890123\",\n        \"name\": \"Coach\",\n        \"description\": \"Team coach or trainer account\",\n        \"created_at\": \"2026-03-02T11:00:00Z\",\n        \"updated_at\": \"2026-03-02T11:00:00Z\"\n    }\n}"
+						},
+						{
+							"name": "Error - Unauthorized",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Coach\",\n    \"description\": \"Team coach or trainer account\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/account-types",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "account-types"]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": false,\n    \"message\": \"Authorization header required\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Get All Account Types",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/account-types",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "account-types"]
+						},
+						"description": "Get list of all account types (requires authentication)"
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/v1/account-types",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "account-types"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Account types retrieved successfully\",\n    \"data\": [\n        {\n            \"id\": \"admin\",\n            \"name\": \"Admin\",\n            \"description\": \"System administrator with full access\",\n            \"created_at\": \"2026-03-01T08:00:00Z\",\n            \"updated_at\": \"2026-03-01T08:00:00Z\"\n        },\n        {\n            \"id\": \"organizer\",\n            \"name\": \"Organizer\",\n            \"description\": \"Event organizer who can create and manage matches\",\n            \"created_at\": \"2026-03-01T08:00:00Z\",\n            \"updated_at\": \"2026-03-01T08:00:00Z\"\n        },\n        {\n            \"id\": \"player\",\n            \"name\": \"Player\",\n            \"description\": \"Regular player account\",\n            \"created_at\": \"2026-03-01T08:00:00Z\",\n            \"updated_at\": \"2026-03-01T08:00:00Z\"\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Account Type By ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/account-types/player",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "account-types", "player"]
+						},
+						"description": "Get a specific account type by ID (requires authentication)"
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/v1/account-types/player",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "account-types", "player"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Account type retrieved successfully\",\n    \"data\": {\n        \"id\": \"player\",\n        \"name\": \"Player\",\n        \"description\": \"Regular player account\",\n        \"created_at\": \"2026-03-01T08:00:00Z\",\n        \"updated_at\": \"2026-03-01T08:00:00Z\"\n    }\n}"
+						},
+						{
+							"name": "Error - Not Found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/v1/account-types/nonexistent",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "account-types", "nonexistent"]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": false,\n    \"message\": \"account type not found\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Account Type",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Player Updated\",\n    \"description\": \"Updated description for player account\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/account-types/player",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "account-types", "player"]
+						},
+						"description": "Update an existing account type (requires authentication)"
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Player Updated\",\n    \"description\": \"Updated description for player account\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/account-types/player",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "account-types", "player"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Account type updated successfully\",\n    \"data\": {\n        \"id\": \"player\",\n        \"name\": \"Player Updated\",\n        \"description\": \"Updated description for player account\",\n        \"created_at\": \"2026-03-01T08:00:00Z\",\n        \"updated_at\": \"2026-03-02T11:30:00Z\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete Account Type",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/account-types/cd234567-8901-4567-8901-234567890123",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "account-types", "cd234567-8901-4567-8901-234567890123"]
+						},
+						"description": "Delete an account type (requires authentication)"
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/v1/account-types/cd234567-8901-4567-8901-234567890123",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "account-types", "cd234567-8901-4567-8901-234567890123"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Account type deleted successfully\"\n}"
+						}
+					]
+				}
+			],
+			"description": "CRUD operations for Account Types (all endpoints require JWT authentication)"
+		},
+		{
+			"name": "Match Events",
+			"item": [
+				{
+					"name": "Create Match Event",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Mexicano Tournament 2026\",\n    \"total_courts\": 2,\n    \"game_type\": \"mexicano\",\n    \"location\": \"Jakarta Sports Center\",\n    \"play_date\": \"2026-03-15\",\n    \"total_players\": 8,\n    \"team_type\": \"man double\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/match-events",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "match-events"]
+						},
+						"description": "Create a new match event. Business rules:\n- total_players must be at least 4 and multiple of 4\n- total_players must match courts: 2 courts = 8 players, 3 courts = 12 players\n- If total_courts > 2, only admin account_type can create\n- Returns all match event data including ID"
+					},
+					"response": [
+						{
+							"name": "Success - 2 Courts (Player)",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Mexicano Tournament 2026\",\n    \"total_courts\": 2,\n    \"game_type\": \"mexicano\",\n    \"location\": \"Jakarta Sports Center\",\n    \"play_date\": \"2026-03-15\",\n    \"total_players\": 8,\n    \"team_type\": \"man double\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/match-events",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "match-events"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Match event created successfully\",\n    \"data\": {\n        \"id\": \"ef345678-9012-4567-8901-345678901234\",\n        \"user_id\": \"ab123456-7890-4567-8901-123456789012\",\n        \"user\": {\n            \"id\": \"ab123456-7890-4567-8901-123456789012\",\n            \"account_type_id\": \"player\",\n            \"username\": \"hauzan\",\n            \"full_name\": \"Hauzan Tsaaqif\",\n            \"email\": \"hauzan@gmail.com\",\n            \"created_at\": \"2026-03-02T10:30:00Z\"\n        },\n        \"name\": \"Mexicano Tournament 2026\",\n        \"total_courts\": 2,\n        \"game_type\": \"mexicano\",\n        \"location\": \"Jakarta Sports Center\",\n        \"play_date\": \"2026-03-15T00:00:00Z\",\n        \"total_players\": 8,\n        \"team_type\": \"man double\",\n        \"created_at\": \"2026-03-02T12:00:00Z\",\n        \"updated_at\": \"2026-03-02T12:00:00Z\"\n    }\n}"
+						},
+						{
+							"name": "Success - 3 Courts (Admin Only)",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Big Tournament 2026\",\n    \"total_courts\": 3,\n    \"game_type\": \"mexicano\",\n    \"location\": \"Main Stadium\",\n    \"play_date\": \"2026-03-20\",\n    \"total_players\": 12,\n    \"team_type\": \"woman double\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/match-events",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "match-events"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Match event created successfully\",\n    \"data\": {\n        \"id\": \"ff456789-0123-4567-8901-456789012345\",\n        \"user_id\": \"admin-user-id\",\n        \"user\": {\n            \"id\": \"admin-user-id\",\n            \"account_type_id\": \"admin\",\n            \"username\": \"admin\",\n            \"full_name\": \"System Admin\",\n            \"email\": \"admin@example.com\",\n            \"created_at\": \"2026-03-01T08:00:00Z\"\n        },\n        \"name\": \"Big Tournament 2026\",\n        \"total_courts\": 3,\n        \"game_type\": \"mexicano\",\n        \"location\": \"Main Stadium\",\n        \"play_date\": \"2026-03-20T00:00:00Z\",\n        \"total_players\": 12,\n        \"team_type\": \"woman double\",\n        \"created_at\": \"2026-03-02T12:30:00Z\",\n        \"updated_at\": \"2026-03-02T12:30:00Z\"\n    }\n}"
+						},
+						{
+							"name": "Error - Not Admin (>2 Courts)",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Big Tournament\",\n    \"total_courts\": 3,\n    \"game_type\": \"mexicano\",\n    \"location\": \"Stadium\",\n    \"play_date\": \"2026-03-20\",\n    \"total_players\": 12,\n    \"team_type\": \"man double\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/match-events",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "match-events"]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": false,\n    \"message\": \"only admin can create match events with more than 2 courts\"\n}"
+						},
+						{
+							"name": "Error - Invalid Players Count",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Tournament\",\n    \"total_courts\": 2,\n    \"game_type\": \"mexicano\",\n    \"location\": \"Stadium\",\n    \"play_date\": \"2026-03-20\",\n    \"total_players\": 6,\n    \"team_type\": \"man double\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/match-events",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "match-events"]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": false,\n    \"message\": \"total players must be a multiple of 4\"\n}"
+						},
+						{
+							"name": "Error - Players Not Match Courts",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Tournament\",\n    \"total_courts\": 2,\n    \"game_type\": \"mexicano\",\n    \"location\": \"Stadium\",\n    \"play_date\": \"2026-03-20\",\n    \"total_players\": 12,\n    \"team_type\": \"man double\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/match-events",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "match-events"]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": false,\n    \"message\": \"for 2 court(s), total players must be 8 (got 12)\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Get All Match Events",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/match-events?page=1&page_size=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "match-events"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "page_size",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get all match events with pagination. Default: page=1, page_size=10, max page_size=100"
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/match-events?page=1&page_size=10",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "match-events"],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "page_size",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Match events retrieved successfully\",\n    \"data\": {\n        \"match_events\": [\n            {\n                \"id\": \"ef345678-9012-4567-8901-345678901234\",\n                \"user_id\": \"ab123456-7890-4567-8901-123456789012\",\n                \"user\": {\n                    \"id\": \"ab123456-7890-4567-8901-123456789012\",\n                    \"username\": \"hauzan\",\n                    \"full_name\": \"Hauzan Tsaaqif\"\n                },\n                \"name\": \"Mexicano Tournament 2026\",\n                \"total_courts\": 2,\n                \"game_type\": \"mexicano\",\n                \"location\": \"Jakarta Sports Center\",\n                \"play_date\": \"2026-03-15T00:00:00Z\",\n                \"total_players\": 8,\n                \"team_type\": \"man double\",\n                \"created_at\": \"2026-03-02T12:00:00Z\",\n                \"updated_at\": \"2026-03-02T12:00:00Z\"\n            }\n        ],\n        \"pagination\": {\n            \"page\": 1,\n            \"page_size\": 10,\n            \"total\": 1,\n            \"total_pages\": 1\n        }\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get My Match Events",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/match-events/my-events",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "match-events", "my-events"]
+						},
+						"description": "Get match events created by the authenticated user"
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/match-events/my-events",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "match-events", "my-events"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Your match events retrieved successfully\",\n    \"data\": [\n        {\n            \"id\": \"ef345678-9012-4567-8901-345678901234\",\n            \"user_id\": \"ab123456-7890-4567-8901-123456789012\",\n            \"user\": {\n                \"id\": \"ab123456-7890-4567-8901-123456789012\",\n                \"username\": \"hauzan\",\n                \"full_name\": \"Hauzan Tsaaqif\"\n            },\n            \"name\": \"Mexicano Tournament 2026\",\n            \"total_courts\": 2,\n            \"game_type\": \"mexicano\",\n            \"location\": \"Jakarta Sports Center\",\n            \"play_date\": \"2026-03-15T00:00:00Z\",\n            \"total_players\": 8,\n            \"team_type\": \"man double\",\n            \"created_at\": \"2026-03-02T12:00:00Z\",\n            \"updated_at\": \"2026-03-02T12:00:00Z\"\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Match Event By ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/match-events/ef345678-9012-4567-8901-345678901234",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "match-events", "ef345678-9012-4567-8901-345678901234"]
+						},
+						"description": "Get a specific match event by ID"
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/match-events/ef345678-9012-4567-8901-345678901234",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "match-events", "ef345678-9012-4567-8901-345678901234"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Match event retrieved successfully\",\n    \"data\": {\n        \"id\": \"ef345678-9012-4567-8901-345678901234\",\n        \"user_id\": \"ab123456-7890-4567-8901-123456789012\",\n        \"user\": {\n            \"id\": \"ab123456-7890-4567-8901-123456789012\",\n            \"account_type_id\": \"player\",\n            \"username\": \"hauzan\",\n            \"full_name\": \"Hauzan Tsaaqif\",\n            \"email\": \"hauzan@gmail.com\"\n        },\n        \"name\": \"Mexicano Tournament 2026\",\n        \"total_courts\": 2,\n        \"game_type\": \"mexicano\",\n        \"location\": \"Jakarta Sports Center\",\n        \"play_date\": \"2026-03-15T00:00:00Z\",\n        \"total_players\": 8,\n        \"team_type\": \"man double\",\n        \"created_at\": \"2026-03-02T12:00:00Z\",\n        \"updated_at\": \"2026-03-02T12:00:00Z\"\n    }\n}"
+						},
+						{
+							"name": "Error - Not Found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/match-events/invalid-id",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "match-events", "invalid-id"]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": false,\n    \"message\": \"match event not found\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Match Event",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Mexicano Tournament 2026 - Updated\",\n    \"total_courts\": 2,\n    \"game_type\": \"mexicano\",\n    \"location\": \"Jakarta Sports Center - Hall A\",\n    \"play_date\": \"2026-03-16\",\n    \"total_players\": 8,\n    \"team_type\": \"mixed double\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/match-events/ef345678-9012-4567-8901-345678901234",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "match-events", "ef345678-9012-4567-8901-345678901234"]
+						},
+						"description": "Update an existing match event. Only the creator can update. Same validation rules as create."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Mexicano Tournament 2026 - Updated\",\n    \"total_courts\": 2,\n    \"game_type\": \"mexicano\",\n    \"location\": \"Jakarta Sports Center - Hall A\",\n    \"play_date\": \"2026-03-16\",\n    \"total_players\": 8,\n    \"team_type\": \"mixed double\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/match-events/ef345678-9012-4567-8901-345678901234",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "match-events", "ef345678-9012-4567-8901-345678901234"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Match event updated successfully\",\n    \"data\": {\n        \"id\": \"ef345678-9012-4567-8901-345678901234\",\n        \"user_id\": \"ab123456-7890-4567-8901-123456789012\",\n        \"user\": {\n            \"id\": \"ab123456-7890-4567-8901-123456789012\",\n            \"username\": \"hauzan\",\n            \"full_name\": \"Hauzan Tsaaqif\"\n        },\n        \"name\": \"Mexicano Tournament 2026 - Updated\",\n        \"total_courts\": 2,\n        \"game_type\": \"mexicano\",\n        \"location\": \"Jakarta Sports Center - Hall A\",\n        \"play_date\": \"2026-03-16T00:00:00Z\",\n        \"total_players\": 8,\n        \"team_type\": \"mixed double\",\n        \"created_at\": \"2026-03-02T12:00:00Z\",\n        \"updated_at\": \"2026-03-02T13:00:00Z\"\n    }\n}"
+						},
+						{
+							"name": "Error - Not Owner",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Updated Name\",\n    \"total_courts\": 2,\n    \"game_type\": \"mexicano\",\n    \"location\": \"Updated Location\",\n    \"play_date\": \"2026-03-16\",\n    \"total_players\": 8,\n    \"team_type\": \"man double\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/match-events/ef345678-9012-4567-8901-345678901234",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "match-events", "ef345678-9012-4567-8901-345678901234"]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": false,\n    \"message\": \"you don't have permission to update this match event\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete Match Event",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/match-events/ef345678-9012-4567-8901-345678901234",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "match-events", "ef345678-9012-4567-8901-345678901234"]
+						},
+						"description": "Delete a match event. Only the creator can delete."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/match-events/ef345678-9012-4567-8901-345678901234",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "match-events", "ef345678-9012-4567-8901-345678901234"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Match event deleted successfully\"\n}"
+						},
+						{
+							"name": "Error - Not Owner",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/match-events/ef345678-9012-4567-8901-345678901234",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "match-events", "ef345678-9012-4567-8901-345678901234"]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\n    \"success\": false,\n    \"message\": \"you don't have permission to delete this match event\"\n}"
+						}
+					]
+				}
+			],
+			"description": "CRUD operations for Match Events. Business Rules:\\n- total_players minimum 4, must be multiple of 4\\n- total_players must match courts (2 courts = 8 players, 3 courts = 12 players)\\n- If total_courts > 2, only admin can create\\n- Only creator can update/delete their own events"
+		}
+	]
+}
+

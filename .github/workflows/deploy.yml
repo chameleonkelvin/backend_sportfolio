@@ -1,0 +1,84 @@
+name: Deploy Backend Scoring App
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Run tests
+        run: go test -v ./...
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Build Linux binary
+        run: |
+          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o scoring_app .
+
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+
+      - name: Copy binary to server
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no \
+            scoring_app \
+            ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:${{ secrets.APP_DIR }}/scoring_app
+
+      - name: Generate .env file
+        run: |
+          cat > .env << EOF
+          DB_HOST=${{ secrets.DB_HOST }}
+          DB_PORT=${{ secrets.DB_PORT }}
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          SERVER_PORT=${{ vars.SERVER_PORT }}
+          SERVER_HOST=${{ vars.SERVER_HOST }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          APP_ENV=${{ secrets.APP_ENV }}
+          EOF
+
+      - name: Copy .env to server
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no \
+            .env \
+            ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:${{ secrets.APP_DIR }}/.env
+
+      - name: Restart application on server
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} '
+              cd ${{ secrets.APP_DIR }} &&
+              chmod +x scoring_app &&
+              sudo systemctl restart scoring_app || \
+              (pkill -f scoring_app; nohup ./scoring_app > app.log 2>&1 &)
+            '
