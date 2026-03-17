@@ -48,8 +48,8 @@ func LoadConfig() (*Config, error) {
 			DBName:   getEnv("DB_NAME", "scoring_app_db"),
 		},
 		Server: ServerConfig{
-			Port: getEnv("SERVER_PORT", "8080"),
-			Host: getEnv("SERVER_HOST", "localhost"),
+			Port: getEnv("PORT", "8080"),
+			Host: getEnv("HOST", "localhost"),
 		},
 		JWT: JWTConfig{
 			Secret: getEnv("JWT_SECRET", "your-secret-key-change-this-in-production"),
